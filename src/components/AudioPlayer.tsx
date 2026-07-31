@@ -24,6 +24,7 @@ export default function AudioPlayer() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const indexRef = useRef(0);
   const skipRef = useRef<(dir: 1 | -1) => void>(() => {});
+  const disableGestureRef = useRef<() => void>(() => {});
 
   useEffect(() => {
     const tracks = weddingConfig.musicTracks;
@@ -37,11 +38,41 @@ export default function AudioPlayer() {
     sessionStorage.setItem(KEY, String(indexRef.current));
     setTrackTitle(tracks[indexRef.current].title);
 
-    const audio = new Audio(tracks[indexRef.current].url);
+    const audio = new Audio();
     audio.loop = false;
     audio.preload = 'auto';
     audio.volume = 0.4;
+    // iOS Safari: treat as inline media, not fullscreen takeover
+    audio.setAttribute('playsinline', 'true');
+    audio.setAttribute('webkit-playsinline', 'true');
+    audio.src = tracks[indexRef.current].url;
     audioRef.current = audio;
+
+    let unlocked = false;
+    // One-shot: first page click starts audio if gate autoplay failed.
+    // Manual pause → never auto-start again.
+    let allowGestureAutoplay = true;
+
+    const markPlaying = () => setIsPlaying(true);
+    const markPaused = () => setIsPlaying(false);
+
+    const tryPlay = () => {
+      const a = audioRef.current;
+      if (!a) return Promise.resolve(false);
+      a.muted = false;
+      const p = a.play();
+      if (p && typeof p.then === 'function') {
+        return p.then(() => {
+          markPlaying();
+          return true;
+        }).catch(() => {
+          markPaused();
+          return false;
+        });
+      }
+      markPlaying();
+      return Promise.resolve(true);
+    };
 
     const loadTrack = async (i: number, autoplay: boolean) => {
       indexRef.current = ((i % tracks.length) + tracks.length) % tracks.length;
@@ -54,12 +85,7 @@ export default function AudioPlayer() {
       audio.src = track.url;
       audio.load();
       if (autoplay) {
-        try {
-          await audio.play();
-          setIsPlaying(true);
-        } catch {
-          setIsPlaying(false);
-        }
+        await tryPlay();
       }
     };
 
@@ -83,21 +109,58 @@ export default function AudioPlayer() {
     audio.addEventListener('loadedmetadata', onTime);
     audio.addEventListener('ended', onEnded);
 
-    const playFromGate = async () => {
-      if (!audioRef.current) return;
-      try {
-        await audioRef.current.play();
-        setIsPlaying(true);
-      } catch {
-        // User can tap player
+    // Warm audio element inside first touch — required on iPhone
+    const unlockFromGate = () => {
+      if (!audioRef.current || unlocked) return;
+      const a = audioRef.current;
+      const prevMuted = a.muted;
+      a.muted = true;
+      const p = a.play();
+      if (p && typeof p.then === 'function') {
+        void p
+          .then(() => {
+            a.pause();
+            a.currentTime = 0;
+            a.muted = prevMuted;
+            unlocked = true;
+          })
+          .catch(() => {
+            a.muted = prevMuted;
+          });
+      } else {
+        a.muted = prevMuted;
       }
     };
 
+    const playFromGate = () => {
+      void tryPlay();
+    };
+
+    // First click/touch anywhere — only if still silent after gate
+    const onFirstGesture = () => {
+      if (!allowGestureAutoplay) return;
+      const a = audioRef.current;
+      if (!a || a.error) return;
+      if (!a.paused && !a.ended) return;
+      void tryPlay();
+    };
+
+    const disableGestureAutoplay = () => {
+      allowGestureAutoplay = false;
+      window.removeEventListener('pointerdown', onFirstGesture, true);
+    };
+
+    disableGestureRef.current = disableGestureAutoplay;
+
+    window.addEventListener('wedding:unlock', unlockFromGate);
     window.addEventListener('wedding:open', playFromGate);
+    window.addEventListener('pointerdown', onFirstGesture, true);
     setReady(true);
 
     return () => {
+      window.removeEventListener('wedding:unlock', unlockFromGate);
       window.removeEventListener('wedding:open', playFromGate);
+      window.removeEventListener('pointerdown', onFirstGesture, true);
       audio.removeEventListener('error', onError);
       audio.removeEventListener('timeupdate', onTime);
       audio.removeEventListener('loadedmetadata', onTime);
@@ -114,11 +177,15 @@ export default function AudioPlayer() {
     if (isPlaying) {
       audio.pause();
       setIsPlaying(false);
+      // User muted — never auto-start from page clicks again
+      disableGestureRef.current();
       return;
     }
     try {
       await audio.play();
       setIsPlaying(true);
+      // Manual play also means user controls audio now
+      disableGestureRef.current();
     } catch {
       // blocked
     }
