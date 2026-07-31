@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Minus, Plus, Loader2 } from 'lucide-react';
+import { Minus, Plus, Loader2, X } from 'lucide-react';
 import { weddingConfig } from '../config/wedding';
 
 const ANON_KEY = 'wedding_anon_id';
@@ -279,8 +279,18 @@ export default function RsvpSection({
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -12 }}
                 transition={{ type: 'spring', stiffness: 280, damping: 28 }}
-                className="surface-card w-full px-7 py-9 md:px-10 md:py-11 flex flex-col items-center"
+                className="surface-card relative w-full px-7 py-9 md:px-10 md:py-11 flex flex-col items-center"
               >
+                <button
+                  type="button"
+                  id="rsvp-count-back-btn"
+                  onClick={() => setPhase('question')}
+                  className="absolute top-3 right-3 z-10 p-1 text-[#8A827B] hover:text-[#2A2523] transition-colors cursor-pointer"
+                  aria-label="Close"
+                >
+                  <X size={16} strokeWidth={1.75} />
+                </button>
+
                 <p className="font-serif-title text-3xl text-[#2A2523] mb-2">
                   Wonderful!
                 </p>
