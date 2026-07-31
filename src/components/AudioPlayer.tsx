@@ -132,7 +132,7 @@ export default function AudioPlayer() {
 
   return (
     <div
-      className="fixed z-50 bottom-[max(0.75rem,env(safe-area-inset-bottom))] right-3 md:bottom-5 md:right-5"
+      className="fixed z-50 bottom-[max(1.125rem,env(safe-area-inset-bottom))] right-3 md:bottom-5 md:right-5"
       onMouseEnter={() => setIsHover(true)}
       onMouseLeave={() => setIsHover(false)}
     >

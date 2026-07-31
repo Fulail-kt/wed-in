@@ -173,7 +173,7 @@ export default function InvitationGate({ guestName }: InvitationGateProps) {
                       <span className="relative w-[5.5rem] h-[5.5rem] sm:w-[5rem] sm:h-[5rem] rounded-full bg-[#9E5A64] shadow-[0_12px_28px_rgba(158,90,100,0.32)] flex items-center justify-center">
                         <span className="absolute inset-[5px] rounded-full border border-[#C2A166]/50" />
                         <span className="font-serif-title text-white text-xl leading-none tracking-wide">
-                          S&amp;B
+                          G&amp;B
                         </span>
                         <motion.span
                           className="absolute inset-0 rounded-full border-2 border-[#C2A166]"

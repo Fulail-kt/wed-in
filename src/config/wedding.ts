@@ -1,7 +1,7 @@
 export const weddingConfig = {
-  groom: 'groom name',
+  groom: 'groom',
   groomParents: 'Son of Mr. & Mrs. Name',
-  bride: 'bride name',
+  bride: 'bride',
   brideParents: 'Daughter of Mr. & Mrs. Name',
   coupleNames: 'Groom & Bride',
 
