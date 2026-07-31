@@ -123,26 +123,37 @@ export default function RsvpSection({
     if (!guestId) saveRsvp(attending ? 'yes' : 'no', attending ? count : 0);
   };
 
-  const clearUnknownRsvp = async () => {
-    if (guestId) return;
-    const id = localStorage.getItem(ANON_KEY);
-    if (id) {
-      try {
+  const clearSavedRsvp = async () => {
+    try {
+      if (guestId) {
+        await fetch('/api/rsvp', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ guestId }),
+        });
+        return;
+      }
+
+      const id = localStorage.getItem(ANON_KEY);
+      if (id) {
         await fetch('/api/rsvp', {
           method: 'DELETE',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ anonymousId: id }),
         });
-      } catch {
-        // still clear local
       }
+    } catch {
+      // still clear local UI
     }
-    clearLocalRsvp();
-    anonRef.current = '';
+
+    if (!guestId) {
+      clearLocalRsvp();
+      anonRef.current = '';
+    }
   };
 
   const handleChangeResponse = async () => {
-    await clearUnknownRsvp();
+    await clearSavedRsvp();
     setPhase('question');
     setGuestCount(1);
   };
@@ -317,7 +328,7 @@ export default function RsvpSection({
                   className="w-full bg-[#4A6B53] hover:bg-[#3D5A44] text-white text-[11px] tracking-[0.2em] uppercase font-semibold py-4 px-6 rounded-2xl transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer hover:-translate-y-0.5 shadow-[0_10px_28px_rgba(74,107,83,0.2)]"
                 >
                   {submitting ? <Loader2 size={16} className="animate-spin" /> : null}
-                  <span>Submit RSVP</span>
+                  <span>Submit</span>
                 </button>
               </motion.div>
             )}

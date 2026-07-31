@@ -22,6 +22,57 @@ const UNKNOWN_IDS_KEY = 'wedding:unknown_ids';
 const guestKey = (id: string) => `wedding:guest:${id}`;
 const unknownKey = (id: string) => `wedding:unknown:${id}`;
 
+export const GUEST_NAME_MIN = 2;
+export const GUEST_NAME_MAX = 60;
+const NAME_PATTERN = /^[\p{L}][\p{L}\p{M}\s.'’\-]*$/u;
+const ID_PATTERN = /^[a-zA-Z0-9_-]{4,64}$/;
+
+export type GuestNameResult =
+  | { ok: true; name: string }
+  | { ok: false; error: string };
+
+export function formatGuestName(name: string): string {
+  return name
+    .trim()
+    .replace(/\s+/g, ' ')
+    .split(' ')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+}
+
+export function validateGuestName(raw: unknown): GuestNameResult {
+  if (typeof raw !== 'string') {
+    return { ok: false, error: 'Name required' };
+  }
+
+  const collapsed = raw.trim().replace(/\s+/g, ' ');
+  if (!collapsed) {
+    return { ok: false, error: 'Name required' };
+  }
+  if (collapsed.length < GUEST_NAME_MIN) {
+    return { ok: false, error: `Name must be at least ${GUEST_NAME_MIN} characters` };
+  }
+  if (collapsed.length > GUEST_NAME_MAX) {
+    return { ok: false, error: `Name must be ${GUEST_NAME_MAX} characters or less` };
+  }
+  if (!NAME_PATTERN.test(collapsed)) {
+    return {
+      ok: false,
+      error: 'Use letters only (spaces, hyphens, apostrophes OK)',
+    };
+  }
+  if (!/[\p{L}]{2,}/u.test(collapsed.replace(/[^\p{L}]/gu, ''))) {
+    return { ok: false, error: 'Name needs at least 2 letters' };
+  }
+
+  return { ok: true, name: formatGuestName(collapsed) };
+}
+
+export function isValidRecordId(id: unknown): id is string {
+  return typeof id === 'string' && ID_PATTERN.test(id.trim());
+}
+
 function shortId(): string {
   return crypto.randomUUID().replace(/-/g, '').slice(0, 8);
 }
@@ -42,22 +93,28 @@ export async function createGuest(name: string): Promise<GuestRecord | null> {
   const redis = getRedis();
   if (!redis) return null;
 
+  const parsed = validateGuestName(name);
+  if (!parsed.ok) return null;
+
   const id = shortId();
   const record = {
-    name: name.trim(),
+    name: parsed.name,
     status: 'pending',
     count: 0,
     updatedAt: '',
   };
 
-  await redis.sadd(IDS_KEY, id);
-  await redis.hset(guestKey(id), record);
+  const pipe = redis.pipeline();
+  pipe.sadd(IDS_KEY, id);
+  pipe.hset(guestKey(id), record);
+  await pipe.exec();
+
   return { id, ...record, status: 'pending' as const };
 }
 
 export async function getGuest(id: string): Promise<GuestRecord | null> {
   const redis = getRedis();
-  if (!redis) return null;
+  if (!redis || !isValidRecordId(id)) return null;
   const raw = await redis.hgetall<Record<string, string | number>>(guestKey(id));
   return parseGuest(id, raw);
 }
@@ -103,6 +160,34 @@ export async function saveGuestRsvp(
   return { id, ...record, status: record.status as GuestStatus };
 }
 
+export async function resetGuestRsvp(id: string): Promise<GuestRecord | null> {
+  const redis = getRedis();
+  if (!redis) return null;
+
+  const existing = await getGuest(id);
+  if (!existing) return null;
+
+  const record = {
+    name: existing.name,
+    status: 'pending',
+    count: 0,
+    updatedAt: '',
+  };
+
+  await redis.hset(guestKey(id), record);
+  return { id, ...record, status: 'pending' as const };
+}
+
+export async function deleteGuest(id: string): Promise<boolean> {
+  const redis = getRedis();
+  if (!redis || !isValidRecordId(id)) return false;
+  const pipe = redis.pipeline();
+  pipe.srem(IDS_KEY, id);
+  pipe.del(guestKey(id));
+  await pipe.exec();
+  return true;
+}
+
 function parseUnknown(id: string, raw: Record<string, string | number> | null): UnknownRecord | null {
   if (!raw || !raw.status) return null;
   const status = raw.status as GuestStatus;
@@ -120,7 +205,7 @@ export async function saveUnknownRsvp(
   count: number
 ): Promise<UnknownRecord | null> {
   const redis = getRedis();
-  if (!redis || !id.trim()) return null;
+  if (!redis || !isValidRecordId(id)) return null;
 
   const record = {
     status: attending ? 'yes' : 'no',
@@ -128,16 +213,21 @@ export async function saveUnknownRsvp(
     updatedAt: new Date().toISOString(),
   };
 
-  await redis.sadd(UNKNOWN_IDS_KEY, id);
-  await redis.hset(unknownKey(id), record);
+  const pipe = redis.pipeline();
+  pipe.sadd(UNKNOWN_IDS_KEY, id);
+  pipe.hset(unknownKey(id), record);
+  await pipe.exec();
+
   return { id, ...record, status: record.status as GuestStatus };
 }
 
 export async function deleteUnknownRsvp(id: string): Promise<boolean> {
   const redis = getRedis();
-  if (!redis || !id.trim()) return false;
-  await redis.srem(UNKNOWN_IDS_KEY, id);
-  await redis.del(unknownKey(id));
+  if (!redis || !isValidRecordId(id)) return false;
+  const pipe = redis.pipeline();
+  pipe.srem(UNKNOWN_IDS_KEY, id);
+  pipe.del(unknownKey(id));
+  await pipe.exec();
   return true;
 }
 
@@ -208,12 +298,3 @@ export function summarizeGuests(guests: GuestRecord[]) {
   };
 }
 
-export function formatGuestName(name: string): string {
-  const trimmed = name.trim();
-  if (!trimmed) return trimmed;
-
-  return trimmed
-    .split(/\s+/)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(' ');
-}
