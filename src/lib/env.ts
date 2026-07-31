@@ -32,11 +32,13 @@ export function readProjectEnv(): Record<string, string> {
 }
 
 export function envGet(name: string, fallback = ''): string {
+  // Vercel / serverless inject vars into process.env — prefer that in production
+  if (process.env[name]) return process.env[name]!;
+
   const file = readProjectEnv();
   return (
     file[name] ||
     (typeof import.meta !== 'undefined' ? String(import.meta.env[name] ?? '') : '') ||
-    process.env[name] ||
     fallback
   );
 }
