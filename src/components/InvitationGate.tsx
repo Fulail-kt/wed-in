@@ -8,6 +8,12 @@ import {
   animate,
 } from 'framer-motion';
 import { weddingConfig } from '../config/wedding';
+import {
+  ensureWeddingAudio,
+  gateAudioCancel,
+  gateAudioPlay,
+  gateAudioStart,
+} from '../lib/weddingAudio';
 
 const OPEN_DIST = 24;
 const REST_LEN = 52;
@@ -52,6 +58,7 @@ export default function InvitationGate({ guestName }: InvitationGateProps) {
   const ringScale = useTransform(progress, [0, 1], [0.96, 1.08]);
 
   useEffect(() => {
+    ensureWeddingAudio();
     if (open) {
       document.body.style.overflow = '';
       return;
@@ -61,10 +68,6 @@ export default function InvitationGate({ guestName }: InvitationGateProps) {
       document.body.style.overflow = '';
     };
   }, [open]);
-
-  const unlockAudio = () => {
-    window.dispatchEvent(new CustomEvent('wedding:unlock'));
-  };
 
   const setSealFromPoint = useCallback(
     (clientX: number, clientY: number) => {
@@ -91,7 +94,7 @@ export default function InvitationGate({ guestName }: InvitationGateProps) {
   const completeOpen = useCallback(() => {
     if (openedRef.current) return;
     openedRef.current = true;
-    window.dispatchEvent(new CustomEvent('wedding:open'));
+    gateAudioPlay();
     setOpen(true);
   }, []);
 
@@ -103,7 +106,7 @@ export default function InvitationGate({ guestName }: InvitationGateProps) {
     if (e.button != null && e.button !== 0) return;
     if (openedRef.current) return;
     e.preventDefault();
-    unlockAudio();
+    gateAudioStart(false);
     draggingRef.current = true;
     movedRef.current = false;
     pointerIdRef.current = e.pointerId;
@@ -128,8 +131,7 @@ export default function InvitationGate({ guestName }: InvitationGateProps) {
     );
     if (moved > 8) movedRef.current = true;
 
-    const dist = Math.hypot(sealX.get(), sealY.get() - REST_LEN);
-    if (dist >= OPEN_DIST) completeOpen();
+    if (Math.hypot(sealX.get(), sealY.get() - REST_LEN) >= OPEN_DIST) completeOpen();
   };
 
   const endPointer = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -144,12 +146,14 @@ export default function InvitationGate({ guestName }: InvitationGateProps) {
     }
     if (openedRef.current) return;
 
-    const dist = Math.hypot(sealX.get(), sealY.get() - REST_LEN);
-    // Tap disabled — pull only
-    if (movedRef.current && dist >= OPEN_DIST) {
+    if (
+      !movedRef.current ||
+      Math.hypot(sealX.get(), sealY.get() - REST_LEN) >= OPEN_DIST
+    ) {
       completeOpen();
       return;
     }
+    gateAudioCancel();
     springHome();
   };
 
@@ -285,7 +289,7 @@ export default function InvitationGate({ guestName }: InvitationGateProps) {
                   style={{ opacity: hintOpacity }}
                   className="absolute bottom-0 left-0 right-0 text-[11px] tracking-[0.18em] uppercase text-[#5A534E] font-semibold"
                 >
-                  Touch anywhere · pull to open
+                  Tap or pull to open
                 </motion.p>
               </div>
             </div>

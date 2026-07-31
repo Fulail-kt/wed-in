@@ -1,10 +1,18 @@
 'use client';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Music2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { weddingConfig } from '../config/wedding';
-
-const KEY = 'wedding_music_i';
+import {
+  ensureWeddingAudio,
+  getTrackTitle,
+  getWeddingAudio,
+  onWeddingMetaChange,
+  onWeddingPlayChange,
+  setUserStopped,
+  skipTrack,
+  tryPlayUnmuted,
+} from '../lib/weddingAudio';
 
 function formatTime(secs: number) {
   if (!secs || !Number.isFinite(secs)) return '0:00';
@@ -21,65 +29,14 @@ export default function AudioPlayer() {
   const [error, setError] = useState(false);
   const [ready, setReady] = useState(false);
   const [trackTitle, setTrackTitle] = useState('Wedding');
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const indexRef = useRef(0);
-  const skipRef = useRef<(dir: 1 | -1) => void>(() => {});
-  const disableGestureRef = useRef<() => void>(() => {});
 
   useEffect(() => {
-    const tracks = weddingConfig.musicTracks;
-    if (!tracks.length) return;
+    if (!weddingConfig.musicTracks.length) return;
+    const audio = ensureWeddingAudio();
+    if (!audio) return;
 
-    const last = Number(sessionStorage.getItem(KEY));
-    indexRef.current =
-      tracks.length > 1 && Number.isFinite(last)
-        ? (last + 1) % tracks.length
-        : Math.floor(Math.random() * tracks.length);
-    sessionStorage.setItem(KEY, String(indexRef.current));
-    setTrackTitle(tracks[indexRef.current].title);
-
-    const audio = new Audio();
-    audio.loop = false;
-    audio.preload = 'auto';
-    audio.volume = 0.4;
-    // iOS Safari: treat as inline media, not fullscreen takeover
-    audio.setAttribute('playsinline', 'true');
-    audio.setAttribute('webkit-playsinline', 'true');
-    audio.src = tracks[indexRef.current].url;
-    audioRef.current = audio;
-
-    let unlocked = false;
-    // First page click starts audio if gate autoplay failed.
-    // Manual pause → never auto-start again.
-    let allowGestureAutoplay = true;
-
-    const tryPlay = () => {
-      const a = audioRef.current;
-      if (!a) return Promise.resolve(false);
-      a.muted = false;
-      const p = a.play();
-      if (p && typeof p.then === 'function') {
-        return p.then(() => true).catch(() => false);
-      }
-      return Promise.resolve(true);
-    };
-
-    const loadTrack = async (i: number, autoplay: boolean) => {
-      indexRef.current = ((i % tracks.length) + tracks.length) % tracks.length;
-      sessionStorage.setItem(KEY, String(indexRef.current));
-      const track = tracks[indexRef.current];
-      setTrackTitle(track.title);
-      setCurrentTime(0);
-      setDuration(0);
-      setError(false);
-      audio.src = track.url;
-      audio.load();
-      if (autoplay) await tryPlay();
-    };
-
-    skipRef.current = (dir) => {
-      void loadTrack(indexRef.current + dir, true);
-    };
+    setTrackTitle(getTrackTitle());
+    setReady(true);
 
     const onError = () => setError(true);
     const onTime = () => {
@@ -88,103 +45,37 @@ export default function AudioPlayer() {
         setDuration(audio.duration);
       }
     };
-    const onEnded = () => {
-      void loadTrack(indexRef.current + 1, true);
-    };
-    // Keep UI in sync with real element state
-    const onPlay = () => setIsPlaying(true);
-    const onPause = () => setIsPlaying(false);
 
     audio.addEventListener('error', onError);
     audio.addEventListener('timeupdate', onTime);
     audio.addEventListener('loadedmetadata', onTime);
-    audio.addEventListener('ended', onEnded);
-    audio.addEventListener('play', onPlay);
-    audio.addEventListener('pause', onPause);
-
-    const unlockFromGate = () => {
-      if (!audioRef.current || unlocked) return;
-      const a = audioRef.current;
-      const prevMuted = a.muted;
-      a.muted = true;
-      const p = a.play();
-      if (p && typeof p.then === 'function') {
-        void p
-          .then(() => {
-            a.pause();
-            a.currentTime = 0;
-            a.muted = prevMuted;
-            unlocked = true;
-          })
-          .catch(() => {
-            a.muted = prevMuted;
-          });
-      } else {
-        a.muted = prevMuted;
-      }
-    };
-
-    const playFromGate = () => {
-      void tryPlay();
-    };
-
-    const onFirstGesture = (e: Event) => {
-      if (!allowGestureAutoplay) return;
-      const a = audioRef.current;
-      if (!a || a.error) return;
-      if (!a.paused && !a.ended) return;
-      // Skip while gate still open — gate owns that gesture
-      const t = e.target;
-      if (t instanceof Element && t.closest('[aria-label*="pull to open"]')) return;
-      void tryPlay();
-    };
-
-    const disableGestureAutoplay = () => {
-      allowGestureAutoplay = false;
-      window.removeEventListener('pointerdown', onFirstGesture, true);
-    };
-
-    disableGestureRef.current = disableGestureAutoplay;
-
-    window.addEventListener('wedding:unlock', unlockFromGate);
-    window.addEventListener('wedding:open', playFromGate);
-    window.addEventListener('pointerdown', onFirstGesture, true);
-    setReady(true);
+    const offPlay = onWeddingPlayChange(setIsPlaying);
+    const offMeta = onWeddingMetaChange(() => {
+      setTrackTitle(getTrackTitle());
+      setCurrentTime(0);
+      setDuration(0);
+      setError(false);
+    });
 
     return () => {
-      window.removeEventListener('wedding:unlock', unlockFromGate);
-      window.removeEventListener('wedding:open', playFromGate);
-      window.removeEventListener('pointerdown', onFirstGesture, true);
       audio.removeEventListener('error', onError);
       audio.removeEventListener('timeupdate', onTime);
       audio.removeEventListener('loadedmetadata', onTime);
-      audio.removeEventListener('ended', onEnded);
-      audio.removeEventListener('play', onPlay);
-      audio.removeEventListener('pause', onPause);
-      audio.pause();
-      audio.src = '';
-      audioRef.current = null;
+      offPlay();
+      offMeta();
     };
   }, []);
 
   const togglePlay = async () => {
-    const audio = audioRef.current;
+    const audio = getWeddingAudio() ?? ensureWeddingAudio();
     if (!audio || error) return;
     if (isPlaying) {
+      setUserStopped(true);
       audio.pause();
-      setIsPlaying(false);
-      // User muted — never auto-start from page clicks again
-      disableGestureRef.current();
       return;
     }
-    try {
-      await audio.play();
-      setIsPlaying(true);
-      // Manual play also means user controls audio now
-      disableGestureRef.current();
-    } catch {
-      // blocked
-    }
+    setUserStopped(false);
+    await tryPlayUnmuted();
   };
 
   const multi = weddingConfig.musicTracks.length > 1;
@@ -199,7 +90,6 @@ export default function AudioPlayer() {
       onMouseEnter={() => setIsHover(true)}
       onMouseLeave={() => setIsHover(false)}
     >
-      {/* Mobile: tiny play FAB only — no chrome over content */}
       <button
         id="audio-toggle-btn-mobile"
         onClick={togglePlay}
@@ -226,7 +116,6 @@ export default function AudioPlayer() {
         )}
       </button>
 
-      {/* Desktop: original expand player + tiny skip at progress end */}
       <motion.div
         layout
         className={`hidden md:flex items-center border border-[#E8E2D8]/90 bg-white/90 backdrop-blur-md shadow-[0_8px_28px_rgba(42,37,35,0.08)] overflow-hidden ${
@@ -313,7 +202,7 @@ export default function AudioPlayer() {
                     <button
                       type="button"
                       aria-label="Previous track"
-                      onClick={() => skipRef.current(-1)}
+                      onClick={() => skipTrack(-1)}
                       disabled={error}
                       className="w-4 h-4 rounded-full flex items-center justify-center text-[#8A827B] hover:text-[#4A6B53] transition-colors cursor-pointer disabled:opacity-30"
                     >
@@ -322,7 +211,7 @@ export default function AudioPlayer() {
                     <button
                       type="button"
                       aria-label="Next track"
-                      onClick={() => skipRef.current(1)}
+                      onClick={() => skipTrack(1)}
                       disabled={error}
                       className="w-4 h-4 rounded-full flex items-center justify-center text-[#8A827B] hover:text-[#4A6B53] transition-colors cursor-pointer disabled:opacity-30"
                     >
