@@ -88,7 +88,9 @@ export default function HeroBanner({ guestName }: HeroBannerProps) {
               <p className="text-xs text-[#2A2523] font-semibold mt-1.5">{weddingConfig.weddingDateDisplay}</p>
             </div>
             <div className="flex-1 px-4 flex flex-col items-center gap-1.5">
-              <p className="font-serif-title text-4xl md:text-5xl text-[#4A6B53] font-normal leading-none">14</p>
+              <p className="font-serif-title text-4xl md:text-5xl text-[#4A6B53] font-normal leading-none">
+                {weddingConfig.weddingDate.getDate()}
+              </p>
               <p className="text-[10px] text-[#8A827B] italic tracking-wide">{weddingConfig.hijriDate}</p>
             </div>
             <div className="flex-1 border-l border-[#E8E2D8] pl-4">

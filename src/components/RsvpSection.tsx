@@ -114,11 +114,14 @@ export default function RsvpSection({
       body.anonymousId = id;
     }
 
-    await fetch('/api/rsvp', {
+    const res = await fetch('/api/rsvp', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     });
+    if (!res.ok) {
+      throw new Error('RSVP failed');
+    }
 
     if (!guestId) saveRsvp(attending ? 'yes' : 'no', attending ? count : 0);
   };
@@ -167,22 +170,23 @@ export default function RsvpSection({
     setSubmitting(true);
     try {
       await postRsvp(true, guestCount);
+      setPhase('confirmed');
+      launchSVGPetalConfetti();
     } catch {
-      // Proceed gracefully
+      setPhase('count-picker');
+    } finally {
+      setSubmitting(false);
     }
-    setPhase('confirmed');
-    launchSVGPetalConfetti();
-    setSubmitting(false);
   };
 
   const handleDecline = async () => {
     setPhase('loading-decline');
     try {
       await postRsvp(false);
+      setPhase('declined');
     } catch {
-      // Proceed gracefully
+      setPhase('question');
     }
-    setPhase('declined');
   };
 
   return (

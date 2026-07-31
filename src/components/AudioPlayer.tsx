@@ -49,12 +49,9 @@ export default function AudioPlayer() {
     audioRef.current = audio;
 
     let unlocked = false;
-    // One-shot: first page click starts audio if gate autoplay failed.
+    // First page click starts audio if gate autoplay failed.
     // Manual pause → never auto-start again.
     let allowGestureAutoplay = true;
-
-    const markPlaying = () => setIsPlaying(true);
-    const markPaused = () => setIsPlaying(false);
 
     const tryPlay = () => {
       const a = audioRef.current;
@@ -62,15 +59,8 @@ export default function AudioPlayer() {
       a.muted = false;
       const p = a.play();
       if (p && typeof p.then === 'function') {
-        return p.then(() => {
-          markPlaying();
-          return true;
-        }).catch(() => {
-          markPaused();
-          return false;
-        });
+        return p.then(() => true).catch(() => false);
       }
-      markPlaying();
       return Promise.resolve(true);
     };
 
@@ -84,9 +74,7 @@ export default function AudioPlayer() {
       setError(false);
       audio.src = track.url;
       audio.load();
-      if (autoplay) {
-        await tryPlay();
-      }
+      if (autoplay) await tryPlay();
     };
 
     skipRef.current = (dir) => {
@@ -103,13 +91,17 @@ export default function AudioPlayer() {
     const onEnded = () => {
       void loadTrack(indexRef.current + 1, true);
     };
+    // Keep UI in sync with real element state
+    const onPlay = () => setIsPlaying(true);
+    const onPause = () => setIsPlaying(false);
 
     audio.addEventListener('error', onError);
     audio.addEventListener('timeupdate', onTime);
     audio.addEventListener('loadedmetadata', onTime);
     audio.addEventListener('ended', onEnded);
+    audio.addEventListener('play', onPlay);
+    audio.addEventListener('pause', onPause);
 
-    // Warm audio element inside first touch — required on iPhone
     const unlockFromGate = () => {
       if (!audioRef.current || unlocked) return;
       const a = audioRef.current;
@@ -136,12 +128,14 @@ export default function AudioPlayer() {
       void tryPlay();
     };
 
-    // First click/touch anywhere — only if still silent after gate
-    const onFirstGesture = () => {
+    const onFirstGesture = (e: Event) => {
       if (!allowGestureAutoplay) return;
       const a = audioRef.current;
       if (!a || a.error) return;
       if (!a.paused && !a.ended) return;
+      // Skip while gate still open — gate owns that gesture
+      const t = e.target;
+      if (t instanceof Element && t.closest('[aria-label*="pull to open"]')) return;
       void tryPlay();
     };
 
@@ -165,6 +159,8 @@ export default function AudioPlayer() {
       audio.removeEventListener('timeupdate', onTime);
       audio.removeEventListener('loadedmetadata', onTime);
       audio.removeEventListener('ended', onEnded);
+      audio.removeEventListener('play', onPlay);
+      audio.removeEventListener('pause', onPause);
       audio.pause();
       audio.src = '';
       audioRef.current = null;
