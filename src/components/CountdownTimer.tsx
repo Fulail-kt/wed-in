@@ -93,7 +93,7 @@ export default function CountdownTimer() {
         >
           <div className="w-14 h-px bg-[#9E5A64]/35 mb-4" />
           <p className="text-[11px] tracking-[0.32em] uppercase text-[#8A827B] font-medium mb-6">
-            Countdown to Nikah Ceremony
+            Countdown to {weddingConfig.ceremonyLabel}
           </p>
 
           {mounted ? (

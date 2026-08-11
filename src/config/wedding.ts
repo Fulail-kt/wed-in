@@ -1,32 +1,35 @@
 export const weddingConfig = {
-  groom: 'groom',
-  groomParents: 'Son of Mr. & Mrs. Name',
-  bride: 'bride',
-  brideParents: 'Daughter of Mr. & Mrs. Name',
-  coupleNames: 'Groom & Bride',
+  groom: 'Jafer',
+  groomParents: '',
+  bride: 'Safa Sherin',
+  brideParents: '',
+  get coupleNames() {
+    return `${this.bride} & ${this.groom}`;
+  },
 
-  weddingDate: new Date('2026-08-30T10:00:00+05:30'),
-  weddingDateDisplay: 'August 30, 2026',
+  weddingDate: new Date('2026-08-30T12:00:00+05:30'),
+  weddingDateDisplay: 'Sunday, August 30th',
   weddingDayName: 'SUNDAY',
   hijriDate: "17 Rabi'al Awwal 1448",
-  ceremonyTime: '10:00 AM',
+  ceremonyTime: '12:00 PM',
+  ceremonyLabel: 'Wedding Ceremony',
 
-  ceremonyVenue: 'MALABAR MARINA',
-  ceremonyAddress: 'Kottakkal, Malappuram, Kerala',
-  ceremonyMapUrl: 'https://maps.google.com/?q=Kottakkal+Malappuram',
+  ceremonyVenue: 'Illikkal Convention Center',
+  ceremonyAddress: 'Chudalappra, Puthuparamba',
+  ceremonyMapUrl: 'https://maps.app.goo.gl/jCocXsuFW87LVk4w5',
 
   get googleCalendarUrl(): string {
-    const start = '20260830T100000Z';
-    const end = '20260830T160000Z';
+    const start = '20260830T063000Z';
+    const end = '20260830T103000Z';
     const text = encodeURIComponent(`${this.coupleNames} Wedding`);
     const details = encodeURIComponent(
-      `You are invited to the Nikah ceremony of ${this.coupleNames} at ${this.ceremonyVenue}, ${this.ceremonyAddress}.`
+      `You are invited to the wedding ceremony of ${this.coupleNames} at ${this.ceremonyVenue}, ${this.ceremonyAddress}.`
     );
     const location = encodeURIComponent(this.ceremonyAddress);
     return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${text}&dates=${start}/${end}&details=${details}&location=${location}`;
   },
 
-  rsvpDeadline: 'August 28, 2026',
+  rsvpDeadline: 'August 25, 2026',
 
   // Music: drop files in public/music/. Player picks one at random on open.
   musicTracks: [

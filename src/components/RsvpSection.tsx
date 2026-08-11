@@ -364,7 +364,7 @@ export default function RsvpSection({
                 </h3>
                 <p className="font-serif-body text-lg md:text-xl italic text-[#5A534E] leading-relaxed mb-8">
                   We look forward to celebrating with you.<br />
-                  See you on the 14th, Insha Allah!
+                  See you on {weddingConfig.weddingDateDisplay}, Insha Allah!
                 </p>
 
                 <div className="bg-[#EBF2EC] border border-[#4A6B53]/20 rounded-2xl py-4 px-6 mb-7 w-full">

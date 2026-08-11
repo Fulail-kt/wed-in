@@ -204,9 +204,9 @@ export default function InvitationGate({ guestName }: InvitationGateProps) {
 
               <h1 className="font-serif-title text-[1.75rem] sm:text-[2.75rem] text-[#2A2523] font-normal leading-tight mb-1.5 px-1">
                 <span className="couple-names">
-                  <span className="couple-names__part whitespace-nowrap">{weddingConfig.groom}</span>
-                  <span className="couple-names__amp font-serif-body italic">&amp;</span>
                   <span className="couple-names__part whitespace-nowrap">{weddingConfig.bride}</span>
+                  <span className="couple-names__amp font-serif-body italic">&amp;</span>
+                  <span className="couple-names__part whitespace-nowrap">{weddingConfig.groom}</span>
                 </span>
               </h1>
               <p className="text-[10px] sm:text-[11px] tracking-[0.2em] uppercase text-[#5A534E] font-medium mb-8 sm:mb-10">
@@ -264,7 +264,7 @@ export default function InvitationGate({ guestName }: InvitationGateProps) {
                       <span className="relative w-[5.5rem] h-[5.5rem] sm:w-[5rem] sm:h-[5rem] rounded-full bg-[#9E5A64] shadow-[0_12px_28px_rgba(158,90,100,0.32)] flex items-center justify-center">
                         <span className="absolute inset-[5px] rounded-full border border-[#C2A166]/50" />
                         <span className="font-serif-title text-white text-xl leading-none tracking-wide">
-                          G&amp;B
+                          S&amp;J
                         </span>
                         <motion.span
                           className="absolute inset-0 rounded-full border-2 border-[#C2A166]"

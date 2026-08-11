@@ -47,18 +47,20 @@ export default function HeroBanner({ guestName }: HeroBannerProps) {
                 transition={{ delay: 0.2 }}
                 className="text-[11px] tracking-[0.22em] uppercase text-[#8A827B] font-medium mb-6 max-w-lg leading-relaxed px-2"
               >
-                Request the honour of your presence at the Nikah ceremony of their beloved children
+                Request the honour of your presence at the wedding ceremony of their beloved daughter
               </motion.p>
             )}
           </AnimatePresence>
 
           <div className="mb-1 w-full flex flex-col items-center gap-2">
             <h1 className="font-serif-title text-5xl md:text-7xl text-[#2A2523] tracking-tight font-normal leading-[1.1]">
-              {weddingConfig.groom}
+              {weddingConfig.bride}
             </h1>
-            <p className="text-[11px] md:text-xs tracking-[0.18em] uppercase text-[#8A827B] font-medium">
-              {weddingConfig.groomParents}
-            </p>
+            {weddingConfig.brideParents ? (
+              <p className="text-[11px] md:text-xs tracking-[0.18em] uppercase text-[#8A827B] font-medium">
+                {weddingConfig.brideParents}
+              </p>
+            ) : null}
           </div>
 
           <div className="flex items-center justify-center gap-5 my-6 text-[#9E5A64]">
@@ -69,15 +71,17 @@ export default function HeroBanner({ guestName }: HeroBannerProps) {
 
           <div className="mb-1 w-full flex flex-col items-center gap-2">
             <h1 className="font-serif-title text-5xl md:text-7xl text-[#2A2523] tracking-tight font-normal leading-[1.1]">
-              {weddingConfig.bride}
+              {weddingConfig.groom}
             </h1>
-            <p className="text-[11px] md:text-xs tracking-[0.18em] uppercase text-[#8A827B] font-medium">
-              {weddingConfig.brideParents}
-            </p>
+            {weddingConfig.groomParents ? (
+              <p className="text-[11px] md:text-xs tracking-[0.18em] uppercase text-[#8A827B] font-medium">
+                {weddingConfig.groomParents}
+              </p>
+            ) : null}
           </div>
 
           <p className="text-[11px] tracking-[0.24em] uppercase text-[#8A827B] mt-8 mb-6 font-medium">
-            Nikah Ceremony
+            {weddingConfig.ceremonyLabel}
           </p>
 
           <div className="w-full max-w-md bg-white/70 border border-[#E8E2D8] rounded-2xl px-6 py-7 md:px-8 md:py-8 flex items-center justify-between mx-auto">
@@ -103,10 +107,15 @@ export default function HeroBanner({ guestName }: HeroBannerProps) {
             <p className="text-sm font-semibold tracking-[0.2em] uppercase text-[#2A2523]">
               {weddingConfig.ceremonyVenue}
             </p>
-            <p className="text-xs text-[#8A827B] flex items-center justify-center gap-1.5">
+            <a
+              href={weddingConfig.ceremonyMapUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-[#8A827B] flex items-center justify-center gap-1.5 hover:text-[#4A6B53] transition-colors"
+            >
               <MapPin size={13} className="text-[#9E5A64]" strokeWidth={1.75} />
               <span>{weddingConfig.ceremonyAddress}</span>
-            </p>
+            </a>
           </div>
         </motion.div>
       </div>

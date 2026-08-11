@@ -40,22 +40,30 @@ export default function EventDetails() {
           className="surface-card w-full overflow-hidden mb-4"
         >
           <div className="px-6 pt-7 pb-5 md:px-8 md:pt-8 border-b border-[#E8E2D8]/80">
-            <div className="flex items-center gap-2 mb-4">
+            <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-2 mb-4">
               <span className="inline-flex items-center gap-1.5 text-[10px] tracking-[0.22em] uppercase font-semibold text-[#4A6B53] bg-[#EBF2EC] px-3 py-1.5 rounded-full">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#4A6B53]" />
-                Nikah Ceremony
+                {weddingConfig.ceremonyLabel}
               </span>
-              <span className="text-[10px] tracking-[0.15em] uppercase text-[#8A827B]">
+              <span className="hidden sm:inline text-[#E8E2D8]" aria-hidden="true">
+                ·
+              </span>
+              <span className="text-[10px] tracking-[0.15em] uppercase text-[#8A827B] font-medium">
                 {weddingConfig.weddingDayName}
               </span>
             </div>
 
-            <h3 className="font-serif-title text-[1.85rem] md:text-[2.35rem] text-[#2A2523] font-normal tracking-tight leading-tight mb-5">
+            <h3 className="font-serif-title text-[1.85rem] md:text-[2.35rem] text-[#2A2523] font-normal tracking-tight leading-tight mb-5 text-center">
               {weddingConfig.ceremonyVenue}
             </h3>
 
-            {/* Location — high visibility */}
-            <div className="rounded-2xl bg-[#EBF2EC]/70 border border-[#4A6B53]/20 px-4 py-4 md:px-5 md:py-5">
+            <a
+              href={weddingConfig.ceremonyMapUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block rounded-2xl bg-[#EBF2EC]/70 border border-[#4A6B53]/20 px-4 py-4 md:px-5 md:py-5 transition-colors duration-300 hover:bg-[#EBF2EC] cursor-pointer"
+              aria-label="Open venue location in Google Maps"
+            >
               <div className="flex gap-3.5 items-center justify-center">
                 <span className="shrink-0 w-10 h-10 rounded-xl bg-[#4A6B53] text-white flex items-center justify-center shadow-[0_6px_16px_rgba(74,107,83,0.25)]">
                   <MapPin size={18} strokeWidth={2} />
@@ -66,7 +74,7 @@ export default function EventDetails() {
                   </p>
                 </div>
               </div>
-            </div>
+            </a>
           </div>
 
           <div className="px-6 py-4 md:px-8 flex items-center justify-between gap-4 bg-[#FDFCF8]">

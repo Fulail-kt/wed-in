@@ -18,9 +18,9 @@ export default function Footer() {
 
           <h2 className="font-serif-title text-4xl md:text-5xl text-[#2A2523] font-normal tracking-tight">
             <span className="couple-names">
-              <span className="couple-names__part whitespace-nowrap">{weddingConfig.groom}</span>
-              <span className="couple-names__amp font-serif-body italic">&amp;</span>
               <span className="couple-names__part whitespace-nowrap">{weddingConfig.bride}</span>
+              <span className="couple-names__amp font-serif-body italic">&amp;</span>
+              <span className="couple-names__part whitespace-nowrap">{weddingConfig.groom}</span>
             </span>
           </h2>
 
