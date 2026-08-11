@@ -18,6 +18,7 @@ type Speck = {
   vy: number;
   life: number;
   size: number;
+  fill: string;
 };
 
 type TrailDot = {
@@ -28,41 +29,68 @@ type TrailDot = {
   opacity: number;
 };
 
+const PALETTE = {
+  default: {
+    petalBg: 'linear-gradient(180deg,#F4B8C3,#E8A2AF)',
+    heart: '#F4B8C3',
+    heartAlt: '#F4B8C3',
+    floaters: true,
+  },
+  v1: {
+    petalBg: 'linear-gradient(180deg,#b8d4e8,#6d9278)',
+    heart: '#b8d4e8',
+    heartAlt: '#6d9278',
+    floaters: false,
+  },
+} as const;
+
+type AmbienceVariant = keyof typeof PALETTE;
+
+const heartSvg = (r: number, fill: string) =>
+  `<svg width="${r}" height="${r}" viewBox="0 0 24 24" fill="none"><path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z" fill="${fill}" fill-opacity="0.9"/></svg>`;
+
+type Props = {
+  variant?: AmbienceVariant;
+};
+
 /** Rising petals + desktop cursor trail + click heart burst. */
-export default function PageAmbience() {
+export default function PageAmbience({ variant = 'default' }: Props) {
   const layerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const layer = layerRef.current;
     if (!layer) return;
 
+    const palette = PALETTE[variant];
     const mobile = window.matchMedia('(max-width: 767px)').matches;
     const floaters: Floater[] = [];
 
-    if (mobile) {
-      for (let i = 0; i < 6; i++) {
-        floaters.push({
-          x: 0.08 + Math.random() * 0.84,
-          y: Math.random(),
-          speed: 0.0011 + Math.random() * 0.0012,
-          size: 5 + Math.random() * 5,
-          opacity: 0.28 + Math.random() * 0.3,
-          phase: Math.random() * Math.PI * 2,
-          side: 'full',
-        });
-      }
-    } else {
-      for (let i = 0; i < 16; i++) {
-        const left = i % 2 === 0;
-        floaters.push({
-          x: left ? 0.02 + Math.random() * 0.12 : 0.86 + Math.random() * 0.12,
-          y: Math.random(),
-          speed: 0.0014 + Math.random() * 0.0016,
-          size: 5 + Math.random() * 7,
-          opacity: 0.4 + Math.random() * 0.35,
-          phase: Math.random() * Math.PI * 2,
-          side: left ? 'left' : 'right',
-        });
+    if (palette.floaters) {
+      if (mobile) {
+        for (let i = 0; i < 6; i++) {
+          floaters.push({
+            x: 0.08 + Math.random() * 0.84,
+            y: Math.random(),
+            speed: 0.0011 + Math.random() * 0.0012,
+            size: 5 + Math.random() * 5,
+            opacity: 0.28 + Math.random() * 0.3,
+            phase: Math.random() * Math.PI * 2,
+            side: 'full',
+          });
+        }
+      } else {
+        for (let i = 0; i < 16; i++) {
+          const left = i % 2 === 0;
+          floaters.push({
+            x: left ? 0.02 + Math.random() * 0.12 : 0.86 + Math.random() * 0.12,
+            y: Math.random(),
+            speed: 0.0014 + Math.random() * 0.0016,
+            size: 5 + Math.random() * 7,
+            opacity: 0.4 + Math.random() * 0.35,
+            phase: Math.random() * Math.PI * 2,
+            side: left ? 'left' : 'right',
+          });
+        }
       }
     }
 
@@ -92,6 +120,7 @@ export default function PageAmbience() {
           vy: Math.sin(a) * s - 1.2,
           life: 1,
           size: 8 + Math.random() * 8,
+          fill: Math.random() > 0.45 ? palette.heart : palette.heartAlt,
         });
       }
       while (specks.length > 40) specks.shift();
@@ -116,7 +145,7 @@ export default function PageAmbience() {
     const els: HTMLSpanElement[] = floaters.map(() => {
       const el = document.createElement('span');
       el.style.cssText =
-        'position:absolute;border-radius:60% 60% 55% 15%;background:linear-gradient(180deg,#F4B8C3,#E8A2AF);will-change:transform;pointer-events:none';
+        `position:absolute;border-radius:60% 60% 55% 15%;background:${palette.petalBg};will-change:transform;pointer-events:none`;
       layer.appendChild(el);
       return el;
     });
@@ -126,7 +155,7 @@ export default function PageAmbience() {
       const r = Math.round(t.size);
       el.style.cssText =
         'position:absolute;will-change:transform,opacity;pointer-events:none;opacity:0';
-      el.innerHTML = `<svg width="${r}" height="${r}" viewBox="0 0 24 24" fill="none"><path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z" fill="#F4B8C3" fill-opacity="0.9"/></svg>`;
+      el.innerHTML = heartSvg(r, palette.heart);
       layer.appendChild(el);
       return el;
     });
@@ -144,9 +173,6 @@ export default function PageAmbience() {
       speckLayer.appendChild(el);
       return el;
     });
-
-    const speckSvg = (r: number) =>
-      `<svg width="${r}" height="${r}" viewBox="0 0 24 24" fill="none"><path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.27 2 8.5C2 5.41 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.08C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.41 22 8.5C22 12.27 18.6 15.36 13.45 20.03L12 21.35Z" fill="#F4B8C3" fill-opacity="0.9"/></svg>`;
 
     const tick = () => {
       const w = window.innerWidth;
@@ -204,9 +230,10 @@ export default function PageAmbience() {
           continue;
         }
         const r = Math.round(s.size);
-        if (el.dataset.r !== String(r)) {
-          el.dataset.r = String(r);
-          el.innerHTML = speckSvg(r);
+        const fillKey = `${r}-${s.fill}`;
+        if (el.dataset.r !== fillKey) {
+          el.dataset.r = fillKey;
+          el.innerHTML = heartSvg(r, s.fill);
         }
         el.style.left = `${s.x}px`;
         el.style.top = `${s.y}px`;
@@ -229,7 +256,7 @@ export default function PageAmbience() {
       cancelAnimationFrame(raf);
       layer.replaceChildren();
     };
-  }, []);
+  }, [variant]);
 
   return (
     <div

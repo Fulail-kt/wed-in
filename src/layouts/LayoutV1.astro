@@ -1,0 +1,51 @@
+---
+import '../styles/global.css';
+import '../styles/v1.css';
+import { weddingConfig } from '../config/wedding';
+
+interface Props {
+  title?: string;
+  description?: string;
+  guestName?: string;
+}
+
+const defaultTitle = `${weddingConfig.coupleNames} — Wedding Invitation`;
+const defaultDescription = `You are cordially invited to the wedding celebration of ${weddingConfig.coupleNames} on ${weddingConfig.weddingDateDisplay}.`;
+
+const {
+  title = defaultTitle,
+  description = defaultDescription,
+  guestName,
+} = Astro.props;
+
+const pageTitle = guestName
+  ? `An Exclusive Invitation for ${guestName} | ${weddingConfig.coupleNames}`
+  : title;
+---
+
+<!doctype html>
+<html lang="en" class="bg-[#f2f5f8] [color-scheme:light]">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#eef2f7" />
+    <meta name="color-scheme" content="light" />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <link rel="icon" href="/favicon.ico" />
+    <title>{pageTitle}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Varela+Round&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body
+    class="v1-theme min-h-screen overflow-x-hidden bg-v1-page font-v1-sans text-v1-navy antialiased"
+  >
+    <slot />
+  </body>
+</html>

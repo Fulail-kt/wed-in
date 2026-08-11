@@ -15,7 +15,7 @@ export const weddingConfig = {
   ceremonyLabel: 'Wedding Ceremony',
 
   ceremonyVenue: 'Illikkal Convention Center',
-  ceremonyAddress: 'Chudalappra, Puthuparamba',
+  ceremonyAddress: 'Chudalappra, Puthuparamba Rd',
   ceremonyMapUrl: 'https://maps.app.goo.gl/jCocXsuFW87LVk4w5',
 
   get googleCalendarUrl(): string {
@@ -35,5 +35,6 @@ export const weddingConfig = {
   musicTracks: [
     { title: 'Wedding', url: '/music/wedding.mp3' },
     { title: 'Asalayavale', url: '/music/asalayavale.mp3' },
+    { title: 'Deewaniyat', url: '/music/deewaniyat.mp3' },
   ],
 } as const;

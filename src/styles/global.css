@@ -1,5 +1,24 @@
 @import "tailwindcss";
 
+@theme {
+  --font-v1-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-v1-name-a: "Varela Round", "Quicksand", system-ui, sans-serif;
+  --font-v1-script: "Varela Round", "Quicksand", system-ui, sans-serif;
+  --font-v1-serif: "Cormorant Garamond", Georgia, serif;
+  --font-v1-arabic: "Amiri", serif;
+
+  --color-v1-navy: #163544;
+  --color-v1-navy-deep: #0f2c3a;
+  --color-v1-navy-soft: #5a7a8f;
+  --color-v1-grey: #8a9eab;
+  --color-v1-gold: #c9a84c;
+  --color-v1-gold-soft: #d4b45a;
+  --color-v1-paper: #f7fafc;
+
+  --animate-v1-eq: v1-eq 0.85s ease-in-out infinite alternate;
+  --animate-v1-leaf-fall: v1-leaf-fall linear infinite;
+}
+
 :root {
   --bg-page: #F9F7F2;
   --bg-card: #FFFEFB;

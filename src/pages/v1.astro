@@ -1,0 +1,54 @@
+---
+import LayoutV1 from '../layouts/LayoutV1.astro';
+import InvitationGateV1 from '../components/v1/InvitationGateV1';
+import InviteSheetV1 from '../components/v1/InviteSheetV1';
+import RsvpSectionV1 from '../components/v1/RsvpSectionV1';
+import AudioPlayerV1 from '../components/v1/AudioPlayerV1';
+import FooterV1 from '../components/v1/FooterV1';
+import PageAmbience from '../components/PageAmbience';
+import { v1Tw } from '../components/v1/v1Tw';
+import { getGuest, formatGuestName } from '../lib/guests';
+
+const guestIdParam = Astro.url.searchParams.get('g') ?? undefined;
+let guestId: string | undefined;
+let guestName: string | undefined;
+let guestStatus: 'pending' | 'yes' | 'no' | undefined;
+let guestCount = 0;
+
+if (guestIdParam) {
+  const guest = await getGuest(guestIdParam);
+  if (guest) {
+    guestId = guestIdParam;
+    guestName = guest.name;
+    guestStatus = guest.status;
+    guestCount = guest.count;
+  }
+}
+
+if (!guestName) {
+  guestName = Astro.url.searchParams.get('guest') ?? undefined;
+}
+
+if (guestName) {
+  guestName = formatGuestName(guestName);
+}
+---
+
+<LayoutV1 guestName={guestName}>
+  <PageAmbience client:load variant="v1" />
+  <InviteSheetV1 client:load guestName={guestName} />
+
+  <div class={`${v1Tw.below} -mt-1 gap-6 pb-20`}>
+    <RsvpSectionV1
+      client:load
+      guestId={guestId}
+      guestName={guestName}
+      initialStatus={guestStatus}
+      initialCount={guestCount}
+    />
+    <FooterV1 client:load />
+  </div>
+
+  <AudioPlayerV1 client:load />
+  <InvitationGateV1 client:load guestName={guestName} />
+</LayoutV1>

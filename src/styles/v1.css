@@ -1,0 +1,141 @@
+/* V1 — garden calc, keyframes, page bg */
+
+.v1-theme {
+  --v1-garden-h: min(32vh, 16.5rem);
+  --v1-garden-frac: 0.36;
+  --v1-garden-tile-full-h: calc(var(--v1-garden-h) / var(--v1-garden-frac));
+  --v1-garden-tile-w: calc(var(--v1-garden-tile-full-h) * 595 / 842);
+  --v1-cursor-default: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cpath d='M14 24s-8.5-5.4-8.5-11A4.5 4.5 0 0 1 14 9.2 4.5 4.5 0 0 1 22.5 13C22.5 18.6 14 24 14 24z' fill='%23b8d4e8' stroke='%23163544' stroke-width='1.4'/%3E%3C/svg%3E") 14 14, auto;
+  --v1-cursor-pointer: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cpath d='M14 24s-8.5-5.4-8.5-11A4.5 4.5 0 0 1 14 9.2 4.5 4.5 0 0 1 22.5 13C22.5 18.6 14 24 14 24z' fill='%23163544' stroke='%236d9278' stroke-width='1.2'/%3E%3C/svg%3E") 14 14, pointer;
+  --v1-cursor-pull: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 28 28'%3E%3Cpath d='M14 24s-8.5-5.4-8.5-11A4.5 4.5 0 0 1 14 9.2 4.5 4.5 0 0 1 22.5 13C22.5 18.6 14 24 14 24z' fill='%23c9a84c' stroke='%23163544' stroke-width='1.2'/%3E%3C/svg%3E") 14 14, grab;
+}
+
+@media (max-width: 767px) {
+  .v1-theme {
+    --v1-garden-h: min(26vh, 13.5rem);
+  }
+}
+
+.v1-theme input,
+.v1-theme textarea,
+.v1-theme select {
+  caret-color: #163544;
+}
+
+/* Desktop — same heart as main site, v1 blue/green palette */
+@media (pointer: fine) {
+  body.v1-theme,
+  body.v1-theme *:not(input):not(textarea):not(select) {
+    cursor: var(--v1-cursor-default) !important;
+  }
+
+  body.v1-theme a,
+  body.v1-theme button,
+  body.v1-theme [role='button'],
+  body.v1-theme label[for],
+  body.v1-theme summary,
+  body.v1-theme .cursor-pointer {
+    cursor: var(--v1-cursor-pointer) !important;
+  }
+
+  body.v1-theme .cursor-wedding-pull,
+  body.v1-theme .cursor-wedding-pull * {
+    cursor: var(--v1-cursor-pull) !important;
+  }
+}
+
+.bg-v1-page {
+  background:
+    radial-gradient(ellipse 70% 40% at 12% 0%, rgba(160, 195, 220, 0.28), transparent 60%),
+    radial-gradient(ellipse 55% 35% at 90% 8%, rgba(150, 185, 210, 0.22), transparent 55%),
+    radial-gradient(ellipse 80% 35% at 50% 100%, rgba(140, 180, 205, 0.25), transparent 55%),
+    radial-gradient(ellipse 50% 30% at 50% 45%, rgba(255, 255, 255, 0.5), transparent 70%),
+    linear-gradient(180deg, #eef3f7 0%, #f7fafc 40%, #f0f4f8 100%);
+}
+
+.h-v1-garden {
+  height: var(--v1-garden-h);
+}
+
+.h-v1-garden-tile {
+  height: var(--v1-garden-tile-full-h);
+}
+
+.w-v1-garden-tile {
+  width: var(--v1-garden-tile-w);
+}
+
+.-ml-v1-garden-overlap {
+  margin-left: calc(var(--v1-garden-tile-w) * -0.08);
+}
+
+.font-v1-name-a {
+  font-family: 'Varela Round', 'Quicksand', system-ui, sans-serif;
+}
+
+.font-v1-script {
+  font-family: 'Varela Round', 'Quicksand', system-ui, sans-serif;
+}
+
+.font-v1-display {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+}
+
+.font-v1-serif {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+}
+
+.font-v1-arabic {
+  font-family: 'Amiri', serif;
+}
+
+.font-v1-sans {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
+@keyframes v1-leaf-fall {
+  0% {
+    transform: translate3d(0, -6vh, 0) rotate(var(--v1-rot-start, 0deg));
+    opacity: 0;
+  }
+  6% {
+    opacity: var(--v1-fall-opacity, 0.7);
+  }
+  22% {
+    transform: translate3d(calc(var(--v1-sway, 24px) * 0.45), 22vh, 0)
+      rotate(calc(var(--v1-rot-start, 0deg) + 140deg));
+  }
+  48% {
+    transform: translate3d(calc(var(--v1-sway, 24px) * -0.35), 52vh, 0)
+      rotate(calc(var(--v1-rot-start, 0deg) + 280deg));
+  }
+  72% {
+    transform: translate3d(calc(var(--v1-sway, 24px) * 0.65), 78vh, 0)
+      rotate(calc(var(--v1-rot-start, 0deg) + 400deg));
+  }
+  92% {
+    opacity: calc(var(--v1-fall-opacity, 0.7) * 0.55);
+  }
+  100% {
+    transform: translate3d(var(--v1-drift, 0px), 112vh, 0)
+      rotate(calc(var(--v1-rot-start, 0deg) + 540deg));
+    opacity: 0;
+  }
+}
+
+@keyframes v1-eq {
+  from {
+    transform: scaleY(0.35);
+    opacity: 0.55;
+  }
+  to {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v1-falling-florals {
+    display: none;
+  }
+}
