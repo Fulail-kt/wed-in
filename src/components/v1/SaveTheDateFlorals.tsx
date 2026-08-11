@@ -40,27 +40,23 @@ function fallCount(mobile: boolean) {
 function buildFalling(mobile: boolean): FallingSpec[] {
   const count = fallCount(mobile);
   const sizeMin = mobile ? 1.55 : 1.5;
-  const sizeRange = mobile ? 1 : 0.95;
-  const durationMin = mobile ? 7.5 : 9;
-  const durationRange = mobile ? 7.5 : 11;
-  const staggerSpan = mobile ? 16 : 22;
+  const sizeRange = mobile ? 1.05 : 0.95;
+  const delaySpread = mobile ? 20 : 22;
 
   return Array.from({ length: count }, (_, i) => {
-    const duration = durationMin + Math.random() * durationRange;
-    const phase = (i / count) * staggerSpan;
-    const jitter = Math.random() * (staggerSpan / count);
+    const duration = 9 + Math.random() * (mobile ? 9 : 11);
 
     return {
       id: i,
-      src: FALL_ASSETS[i % FALL_ASSETS.length]!,
-      left: 1 + ((i * (97 / count) + Math.random() * 4) % 97),
+      src: FALL_ASSETS[Math.floor(Math.random() * FALL_ASSETS.length)]!,
+      left: 1 + Math.random() * 97,
       sizeRem: sizeMin + Math.random() * sizeRange,
       duration,
-      delay: -(phase + jitter),
-      sway: 18 + Math.random() * 42,
-      drift: (Math.random() - 0.5) * 48,
+      delay: -(Math.random() * delaySpread),
+      sway: 14 + Math.random() * (mobile ? 52 : 42),
+      drift: (Math.random() - 0.5) * (mobile ? 64 : 48),
       rotStart: Math.random() * 360,
-      opacity: 0.45 + Math.random() * 0.3,
+      opacity: 0.42 + Math.random() * 0.33,
     };
   });
 }
