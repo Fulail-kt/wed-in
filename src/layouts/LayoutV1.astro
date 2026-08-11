@@ -43,9 +43,9 @@ const pageTitle = guestName
       rel="stylesheet"
     />
   </head>
-  <body
-    class="v1-theme min-h-screen overflow-x-hidden bg-v1-page font-v1-sans text-v1-navy antialiased"
-  >
-    <slot />
+  <body class="v1-theme min-h-screen bg-v1-page font-v1-sans text-v1-navy antialiased">
+    <div class="min-h-screen overflow-x-hidden">
+      <slot />
+    </div>
   </body>
 </html>

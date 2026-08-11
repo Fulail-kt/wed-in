@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CalendarHeart, MapPin, Navigation } from 'lucide-react';
 import { weddingConfig } from '../../config/wedding';
-import { FallingFlorals, StickyGarden } from './SaveTheDateFlorals';
+import { StickyGarden } from './SaveTheDateFlorals';
 import CoupleNamesV1 from './CoupleNamesV1';
 import { eventDateParts } from './eventDateParts';
 import { v1Tw } from './v1Tw';
@@ -42,7 +42,6 @@ export default function InviteSheetV1({ guestName }: Props) {
 
   return (
     <>
-      <FallingFlorals />
       <StickyGarden />
 
       <motion.section

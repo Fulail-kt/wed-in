@@ -2,6 +2,7 @@
  * Save-the-date florals — falling leaves/flowers + sticky bottom garden strip.
  */
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { CSSProperties } from 'react';
 
 const A = '/assets/reference-assets/';
@@ -62,8 +63,10 @@ function tileWidth(gardenHeight: number) {
 
 export function FallingFlorals() {
   const [items, setItems] = useState<FallingSpec[]>([]);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const mq = window.matchMedia('(max-width: 767px)');
     const apply = () => setItems(buildFalling(mq.matches));
     apply();
@@ -71,16 +74,19 @@ export function FallingFlorals() {
     return () => mq.removeEventListener('change', apply);
   }, []);
 
-  if (!items.length) return null;
+  if (!mounted || !items.length) return null;
 
-  return (
-    <div className="v1-falling-florals pointer-events-none fixed inset-0 z-[2] overflow-hidden" aria-hidden="true">
+  return createPortal(
+    <div
+      className="v1-falling-florals pointer-events-none fixed inset-0 z-[28] overflow-hidden"
+      aria-hidden="true"
+    >
       {items.map((item) => (
         <img
           key={item.id}
           src={`${A}${item.src}`}
           alt=""
-          className="absolute -top-[4%] block h-auto animate-v1-leaf-fall origin-center select-none drop-shadow-[0_1px_3px_rgba(15,44,58,0.07)] will-change-[transform,opacity]"
+          className="absolute -top-[4%] block h-auto animate-v1-leaf-fall origin-center select-none drop-shadow-[0_1px_3px_rgba(15,44,58,0.07)]"
           draggable={false}
           style={
             {
@@ -88,6 +94,8 @@ export function FallingFlorals() {
               width: `${item.sizeRem}rem`,
               animationDuration: `${item.duration}s`,
               animationDelay: `${item.delay}s`,
+              WebkitAnimationDuration: `${item.duration}s`,
+              WebkitAnimationDelay: `${item.delay}s`,
               '--v1-sway': `${item.sway}px`,
               '--v1-drift': `${item.drift}px`,
               '--v1-rot-start': `${item.rotStart}deg`,
@@ -96,7 +104,8 @@ export function FallingFlorals() {
           }
         />
       ))}
-    </div>
+    </div>,
+    document.body,
   );
 }
 

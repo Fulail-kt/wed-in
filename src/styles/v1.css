@@ -46,6 +46,8 @@
 
 .bg-v1-page {
   background:
+    radial-gradient(ellipse 42% 95% at 0% 50%, rgba(160, 195, 220, 0.16), transparent 72%),
+    radial-gradient(ellipse 42% 95% at 100% 50%, rgba(150, 185, 210, 0.14), transparent 72%),
     radial-gradient(ellipse 70% 40% at 12% 0%, rgba(160, 195, 220, 0.28), transparent 60%),
     radial-gradient(ellipse 55% 35% at 90% 8%, rgba(150, 185, 210, 0.22), transparent 55%),
     radial-gradient(ellipse 80% 35% at 50% 100%, rgba(140, 180, 205, 0.25), transparent 55%),
@@ -93,31 +95,70 @@
   font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
 }
 
+/* Safari/iOS — register vars used inside @keyframes */
+@property --v1-sway {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --v1-drift {
+  syntax: '<length>';
+  inherits: false;
+  initial-value: 0px;
+}
+
+@property --v1-rot-start {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@property --v1-fall-opacity {
+  syntax: '<number>';
+  inherits: false;
+  initial-value: 0.7;
+}
+
+.v1-falling-florals {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+}
+
+.v1-falling-florals img {
+  animation-name: v1-leaf-fall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  -webkit-animation-name: v1-leaf-fall;
+  -webkit-animation-timing-function: linear;
+  -webkit-animation-iteration-count: infinite;
+}
+
 @keyframes v1-leaf-fall {
   0% {
-    transform: translate3d(0, -6vh, 0) rotate(var(--v1-rot-start, 0deg));
+    transform: translate3d(0, -6dvh, 0) rotate(var(--v1-rot-start, 0deg));
     opacity: 0;
   }
   6% {
     opacity: var(--v1-fall-opacity, 0.7);
   }
   22% {
-    transform: translate3d(calc(var(--v1-sway, 24px) * 0.45), 22vh, 0)
+    transform: translate3d(calc(var(--v1-sway, 24px) * 0.45), 22dvh, 0)
       rotate(calc(var(--v1-rot-start, 0deg) + 140deg));
   }
   48% {
-    transform: translate3d(calc(var(--v1-sway, 24px) * -0.35), 52vh, 0)
+    transform: translate3d(calc(var(--v1-sway, 24px) * -0.35), 52dvh, 0)
       rotate(calc(var(--v1-rot-start, 0deg) + 280deg));
   }
   72% {
-    transform: translate3d(calc(var(--v1-sway, 24px) * 0.65), 78vh, 0)
+    transform: translate3d(calc(var(--v1-sway, 24px) * 0.65), 78dvh, 0)
       rotate(calc(var(--v1-rot-start, 0deg) + 400deg));
   }
   92% {
     opacity: calc(var(--v1-fall-opacity, 0.7) * 0.55);
   }
   100% {
-    transform: translate3d(var(--v1-drift, 0px), 112vh, 0)
+    transform: translate3d(var(--v1-drift, 0px), 112dvh, 0)
       rotate(calc(var(--v1-rot-start, 0deg) + 540deg));
     opacity: 0;
   }
@@ -135,7 +176,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .v1-falling-florals {
-    display: none;
+  .v1-falling-florals img {
+    animation-duration: 48s !important;
   }
 }

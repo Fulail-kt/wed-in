@@ -6,6 +6,7 @@ import RsvpSectionV1 from '../components/v1/RsvpSectionV1';
 import AudioPlayerV1 from '../components/v1/AudioPlayerV1';
 import FooterV1 from '../components/v1/FooterV1';
 import PageAmbience from '../components/PageAmbience';
+import { FallingFlorals } from '../components/v1/SaveTheDateFlorals';
 import { v1Tw } from '../components/v1/v1Tw';
 import { getGuest, formatGuestName } from '../lib/guests';
 
@@ -36,6 +37,7 @@ if (guestName) {
 
 <LayoutV1 guestName={guestName}>
   <PageAmbience client:load variant="v1" />
+  <FallingFlorals client:load />
   <InviteSheetV1 client:load guestName={guestName} />
 
   <div class={`${v1Tw.below} -mt-1 gap-6 pb-20`}>
